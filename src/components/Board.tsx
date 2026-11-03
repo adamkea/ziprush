@@ -6,6 +6,7 @@ import {
   useLayoutEffect,
   useMemo,
   useRef,
+  useState,
   type KeyboardEvent,
   type PointerEvent,
 } from 'react';
@@ -15,6 +16,7 @@ import {
   applyDragStep,
   applyKeyStep,
   applyPress,
+  canExtend,
   cellKey,
   maxNumber,
   nextRequiredNumber,
@@ -22,7 +24,7 @@ import {
 } from '../game/rules';
 import { cellAt, cellsAlongSegment, clampToGrid, withinCell, type GridPoint } from '../game/geometry';
 import { pathColor } from '../game/color';
-import { CELL, MOTION, PAD } from '../motion';
+import { CELL, MOTION, PAD, centreOf } from '../motion';
 import { CellTint, NumberDisc } from './Cell';
 import { PathLayer, SolveSweep } from './PathLayer';
 import { Walls } from './Walls';
@@ -32,6 +34,11 @@ import styles from './Board.module.css';
 const HYSTERESIS = 0.12;
 /** Minimum gap between invalid-move feedback, so a wiggle into a wall shakes once. */
 const INVALID_COOLDOWN_MS = 320;
+/**
+ * Furthest the live tail may stretch from the head's centre (cells). Matches the point
+ * where the pointer commits the next cell, so the line end tracks the finger continuously.
+ */
+const TAIL_MAX = 0.5 + HYSTERESIS;
 
 export interface BoardProps {
   puzzle: Puzzle;
@@ -81,7 +88,54 @@ export const Board = forwardRef<BoardHandle, BoardProps>(function Board(
   }, [path]);
 
   const drag = useRef<DragState | null>(null);
+  const [dragging, setDragging] = useState(false);
   const lastInvalidAt = useRef(0);
+
+  // ----- Live tail -----
+  // Between cell commits, the head and a short tail follow the pointer directly (no React
+  // render), so the line end tracks the finger instead of hopping cell to cell.
+  const headRef = useRef<SVGGElement>(null);
+  const tailRef = useRef<SVGLineElement>(null);
+  const tailOffset = useRef<readonly [number, number]>([0, 0]);
+
+  const placeHead = useCallback(() => {
+    const head = pathRef.current[pathRef.current.length - 1];
+    const g = headRef.current;
+    const t = tailRef.current;
+    if (!head || !g || !t) return;
+    const x = centreOf(head[1]);
+    const y = centreOf(head[0]);
+    const [dx, dy] = tailOffset.current;
+    g.style.transform = `translate(${x + dx}px, ${y + dy}px)`;
+    t.setAttribute('x1', String(x));
+    t.setAttribute('y1', String(y));
+    t.setAttribute('x2', String(x + dx));
+    t.setAttribute('y2', String(y + dy));
+  }, []);
+
+  /** Offset (SVG units) of the line end from the head centre, toward the pointer along one axis. */
+  const computeTail = (point: GridPoint): readonly [number, number] => {
+    const p = pathRef.current;
+    const head = p[p.length - 1];
+    if (!head) return [0, 0];
+    const fx = point.x - (head[1] + 0.5);
+    const fy = point.y - (head[0] + 0.5);
+    const horiz = Math.abs(fx) >= Math.abs(fy);
+    const along = horiz ? fx : fy;
+    const dir = Math.sign(along);
+    if (dir === 0) return [0, 0];
+    const target: Cell = horiz ? [head[0], head[1] + dir] : [head[0] + dir, head[1]];
+    // Only stretch toward a cell the path could actually enter (not walls, visited cells, out of order numbers).
+    if (!canExtend(p, target, puzzle)) return [0, 0];
+    const len = Math.min(Math.abs(along), TAIL_MAX) * dir * CELL;
+    return horiz ? [len, 0] : [0, len];
+  };
+
+  // Keep the head in place after every path change (React owns the path, we own the tail).
+  useLayoutEffect(() => {
+    if (!drag.current) tailOffset.current = [0, 0];
+    placeHead();
+  }, [path, placeHead]);
 
   const feedbackInvalid = useCallback(() => {
     const now = performance.now();
@@ -137,13 +191,20 @@ export const Board = forwardRef<BoardHandle, BoardProps>(function Board(
       lastPoint: point,
       lastInvalid: res.kind === 'invalid' ? cellKey(cell) : null,
     };
+    setDragging(true);
+    tailOffset.current = computeTail(point);
+    placeHead();
   };
 
   const onPointerMove = (e: PointerEvent<SVGSVGElement>) => {
     const d = drag.current;
     if (!d || e.pointerId !== d.pointerId) return;
     const point = clampToGrid(toGrid(e.clientX, e.clientY, d.rect), size);
-    if (withinCell(point, d.lastCell, HYSTERESIS)) return;
+    if (withinCell(point, d.lastCell, HYSTERESIS)) {
+      tailOffset.current = computeTail(point);
+      placeHead();
+      return;
+    }
 
     // Walk every cell between the last and current pointer position, in order,
     // so fast swipes never skip cells.
@@ -165,10 +226,17 @@ export const Board = forwardRef<BoardHandle, BoardProps>(function Board(
     d.lastCell = cells.at(-1) ?? d.lastCell;
     if (invalid) feedbackInvalid();
     commit(next);
+    tailOffset.current = computeTail(point);
+    placeHead();
   };
 
   const endDrag = (e: PointerEvent<SVGSVGElement>) => {
-    if (drag.current?.pointerId === e.pointerId) drag.current = null;
+    if (drag.current?.pointerId !== e.pointerId) return;
+    drag.current = null;
+    setDragging(false);
+    // Snap the line end back to the head cell's centre.
+    tailOffset.current = [0, 0];
+    placeHead();
   };
 
   const onKeyDown = (e: KeyboardEvent<SVGSVGElement>) => {
@@ -203,13 +271,16 @@ export const Board = forwardRef<BoardHandle, BoardProps>(function Board(
   useEffect(() => {
     if (!solved || !scope.current) return;
     drag.current = null;
+    setDragging(false);
+    tailOffset.current = [0, 0];
+    placeHead();
     if (reducedMotion) return;
     animate(
       scope.current,
       { scale: [1, 1.04, 1] },
       { delay: MOTION.popDelay, duration: MOTION.pop, ease: 'easeOut' },
     );
-  }, [solved, reducedMotion, animate, scope]);
+  }, [solved, reducedMotion, animate, scope, placeHead]);
 
   // ----- Derived render data (cheap; per-cell components are memoised) -----
   const indexByKey = useMemo(() => {
@@ -220,6 +291,7 @@ export const Board = forwardRef<BoardHandle, BoardProps>(function Board(
 
   const nextNumber = useMemo(() => nextRequiredNumber(path, puzzle), [path, puzzle]);
   const denom = Math.max(1, total - 1);
+  const headColor = pathColor(Math.max(0, path.length - 1) / denom);
 
   const gridLines = useMemo(() => {
     let d = '';
@@ -269,7 +341,21 @@ export const Board = forwardRef<BoardHandle, BoardProps>(function Board(
         onContextMenu={(e) => e.preventDefault()}
       >
         <defs>
-          <filter id="path-glow" x="-20%" y="-20%" width="140%" height="140%">
+          {/* Soft halo as a gradient rather than a blur filter: no per-frame filter work. */}
+          <radialGradient id="head-halo">
+            <stop offset="0.35" stopColor={headColor} stopOpacity={0.5} />
+            <stop offset="1" stopColor={headColor} stopOpacity={0} />
+          </radialGradient>
+          {/* Region in board units: a %-of-bbox region collapses to nothing for a straight
+              (zero-width) path, hiding it entirely. */}
+          <filter
+            id="path-glow"
+            filterUnits="userSpaceOnUse"
+            x={-PAD}
+            y={-PAD}
+            width={viewSize}
+            height={viewSize}
+          >
             <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="blur" />
             {/* Halo strength; filter attributes cannot read CSS variables. */}
             <feComponentTransfer in="blur" result="soft">
@@ -302,7 +388,19 @@ export const Board = forwardRef<BoardHandle, BoardProps>(function Board(
         </g>
 
         <Walls walls={puzzle.walls} />
-        <PathLayer path={path} total={total} reducedMotion={reducedMotion} />
+        <PathLayer path={path} total={total} reducedMotion={reducedMotion} live={dragging} />
+
+        {/* Head + live tail: positioned imperatively by placeHead(). */}
+        <g style={{ display: path.length ? undefined : 'none' }}>
+          <line ref={tailRef} className={styles.segment} stroke={headColor} />
+          <g
+            ref={headRef}
+            className={`${styles.head} ${dragging || reducedMotion ? '' : styles.headEase}`}
+          >
+            <circle className={styles.headHalo} r={40} fill="url(#head-halo)" />
+            <circle className={styles.headCore} r={9} />
+          </g>
+        </g>
 
         <g>
           {numberEntries.map(({ key, r, c, value }) => {

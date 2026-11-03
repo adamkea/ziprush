@@ -1,7 +1,6 @@
 /** JS-side motion timings (seconds), mirroring the --dur-* tokens. */
 export const MOTION = {
   segment: 0.09, // grow/shrink of one path segment
-  headMove: 0.08,
   pulse: 0.28, // number pulse
   shake: 0.28,
   sweep: 0.42, // solve light sweep, start of sequence
