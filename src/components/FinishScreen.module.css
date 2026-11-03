@@ -1,0 +1,140 @@
+.card {
+  width: 100%;
+  padding: 24px 20px 12px;
+  border-radius: var(--radius-board);
+  background: var(--board-bg);
+  box-shadow: var(--shadow-board);
+  text-align: center;
+}
+
+.kicker {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.total {
+  margin: 6px 0 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.8rem, 14vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  background: var(--btn-primary-bg);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.best {
+  margin: 4px 0 0;
+  color: var(--success);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.strip {
+  margin: 14px 0 0;
+  font-size: 1.5rem;
+  letter-spacing: 0.1em;
+}
+
+.splits {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-btn);
+  background: var(--btn-bg);
+  font-variant-numeric: tabular-nums;
+}
+
+.splitName {
+  font-weight: 700;
+  text-align: left;
+}
+
+.splitInfo {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.splitTime {
+  font-weight: 700;
+}
+
+.summary {
+  margin: 12px 0 0;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.actions {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn {
+  min-width: 96px;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--text);
+  font-weight: 500;
+  box-shadow: var(--shadow-btn);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.btn:hover {
+  background: var(--btn-bg-hover);
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.primary {
+  border: none;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  font-weight: 700;
+}
+
+.primary:hover {
+  background: var(--btn-primary-bg);
+  filter: brightness(1.08);
+}
+
+.feedback {
+  margin: 10px 0 0;
+  min-height: 1.4em;
+  color: var(--success);
+  font-size: 0.9rem;
+}
