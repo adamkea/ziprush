@@ -47,10 +47,13 @@ export const PathLayer = memo(function PathLayer({
   path,
   total,
   reducedMotion,
+  live,
 }: {
   path: Path;
   total: number;
   reducedMotion: boolean;
+  /** True while a finger/mouse is drawing: the live tail has already drawn new segments, so they appear instantly. */
+  live: boolean;
 }) {
   // Remember the previous length to stagger multi-cell additions/removals.
   const prevLen = useRef(path.length);
@@ -71,6 +74,9 @@ export const PathLayer = memo(function PathLayer({
   return (
     <g>
       <g filter="url(#path-glow)">
+        {/* Chrome drops a filtered group whose bounding box has zero area (a single straight
+            segment), so anchor the box with an invisible corner rect. */}
+        <rect width={1} height={1} fill="none" />
         {/* A lone start cell still gets a visible blob of path colour. */}
         {path.length === 1 && head && (
           <circle cx={centreOf(head[1])} cy={centreOf(head[0])} r={17} fill={pathColor(0)} />
@@ -91,7 +97,7 @@ export const PathLayer = memo(function PathLayer({
               <motion.g
                 key={key}
                 variants={GROUP_VARIANTS}
-                initial="hidden"
+                initial={live ? false : 'hidden'}
                 animate="shown"
                 exit="exit"
               >
@@ -115,17 +121,6 @@ export const PathLayer = memo(function PathLayer({
         </AnimatePresence>
       </g>
 
-      {head && (
-        <motion.g
-          className={styles.head}
-          initial={false}
-          animate={{ x: centreOf(head[1]), y: centreOf(head[0]) }}
-          transition={reducedMotion ? { duration: 0 } : { duration: MOTION.headMove, ease: 'easeOut' }}
-        >
-          <circle className={styles.headHalo} r={30} fill={pathColor((path.length - 1) / denom)} />
-          <circle className={styles.headCore} r={9} />
-        </motion.g>
-      )}
     </g>
   );
 });

@@ -50,9 +50,12 @@
   pointer-events: none;
 }
 
+/* Keyboard / button moves glide; pointer drags track the finger with no easing. */
+.headEase {
+  transition: transform 80ms ease-out;
+}
+
 .headHalo {
-  opacity: 0.45;
-  filter: blur(6px);
   animation: breathe 1.6s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center;
