@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { Board, type BoardHandle } from './components/Board';
 import { puzzles } from './puzzles';
@@ -6,6 +6,31 @@ import { isSolved, maxNumber, nextRequiredNumber } from './game/rules';
 import type { Path } from './game/types';
 import { MOTION } from './motion';
 import styles from './App.module.css';
+
+/** Stage switch: the solved board slides out left while shrinking, the next one slides in from the right. */
+const stageVariants = {
+  enter: (reduced: boolean) =>
+    reduced ? { opacity: 0 } : { opacity: 0, x: '45%', scale: 0.9, rotate: 2 },
+  center: (reduced: boolean) => ({
+    opacity: 1,
+    x: 0,
+    scale: 1,
+    rotate: 0,
+    transition: reduced
+      ? { duration: MOTION.stageIn }
+      : { duration: MOTION.stageIn, ease: [0.22, 1, 0.36, 1] as const },
+  }),
+  exit: (reduced: boolean) =>
+    reduced
+      ? { opacity: 0, transition: { duration: MOTION.stageOut } }
+      : {
+          opacity: 0,
+          x: '-45%',
+          scale: 0.9,
+          rotate: -2,
+          transition: { duration: MOTION.stageOut, ease: [0.55, 0, 1, 0.45] as const },
+        },
+};
 
 export function App() {
   const [index, setIndex] = useState(0);
@@ -20,15 +45,23 @@ export function App() {
 
   const undo = useCallback(() => setPath((p) => p.slice(0, -1)), []);
   const reset = useCallback(() => setPath([]), []);
+  /** Set when switching stages; the incoming board takes focus once it has slid in. */
+  const focusOnEnter = useRef(false);
   const nextPuzzle = useCallback(() => {
+    focusOnEnter.current = true;
     setIndex((i) => (i + 1) % puzzles.length);
     setPath([]);
-    // Keep keyboard players on the board.
-    requestAnimationFrame(() => boardRef.current?.focus());
   }, []);
 
+  // Completing a stage moves on automatically once the solve celebration has played.
+  useEffect(() => {
+    if (!solved) return;
+    const t = window.setTimeout(nextPuzzle, MOTION.autoAdvance * 1000);
+    return () => window.clearTimeout(t);
+  }, [solved, nextPuzzle]);
+
   const status = solved
-    ? 'Every cell, in order. Nice.'
+    ? 'Every cell, in order. Nice. Next stage coming up…'
     : path.length === 0
       ? 'Start on 1, connect the numbers in order, fill every cell.'
       : next
@@ -48,14 +81,22 @@ export function App() {
       </header>
 
       <section className={styles.stage}>
-        <AnimatePresence mode="wait" initial={false}>
+        <AnimatePresence mode="wait" initial={false} custom={reducedMotion}>
           <motion.div
             key={puzzle.id}
             className={styles.boardSlot}
-            initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
-            transition={{ duration: 0.16 }}
+            custom={reducedMotion}
+            variants={stageVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            onAnimationComplete={(def) => {
+              // Keep keyboard players on the board after a switch.
+              if (def === 'center' && focusOnEnter.current) {
+                focusOnEnter.current = false;
+                boardRef.current?.focus();
+              }
+            }}
           >
             <Board
               ref={boardRef}
@@ -91,8 +132,14 @@ export function App() {
               transition={{ duration: MOTION.message, delay: MOTION.messageDelay }}
             >
               <span className={styles.solvedText}>Solved!</span>
-              <button className={`${styles.btn} ${styles.primary}`} onClick={nextPuzzle} autoFocus>
-                Next puzzle →
+              <button className={`${styles.btn} ${styles.primary} ${styles.advance}`} onClick={nextPuzzle}>
+                {/* Fills over the auto-advance delay; clicking skips the wait. */}
+                <span
+                  className={styles.advanceFill}
+                  style={{ animationDuration: `${MOTION.autoAdvance}s` }}
+                  aria-hidden="true"
+                />
+                <span className={styles.advanceLabel}>Next puzzle →</span>
               </button>
             </motion.div>
           ) : (

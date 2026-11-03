@@ -8,6 +8,8 @@
   padding: max(env(safe-area-inset-top), 18px) var(--gutter) max(env(safe-area-inset-bottom), 20px);
   user-select: none;
   -webkit-user-select: none;
+  /* The stage switch slides boards past the edges; don't let that widen the page. */
+  overflow-x: hidden;
 }
 
 .header {
@@ -145,4 +147,38 @@
 .primary:hover:not(:disabled) {
   background: var(--btn-primary-bg);
   filter: brightness(1.08);
+}
+
+.advance {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.advanceFill {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(255, 255, 255, 0.35);
+  transform-origin: left;
+  transform: scaleX(0);
+  animation-name: advance-fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+.advanceLabel {
+  position: relative;
+}
+
+@keyframes advance-fill {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .advanceFill {
+    display: none;
+  }
 }
