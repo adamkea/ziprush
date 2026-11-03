@@ -1,0 +1,144 @@
+.wrap {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-board);
+  box-shadow: var(--shadow-board);
+  will-change: transform;
+}
+
+.board {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-board);
+  /* Own every touch gesture: no scroll, pinch, pull-to-refresh or callouts. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.board:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.surface {
+  fill: var(--board-bg);
+}
+
+.grid {
+  stroke: var(--grid-line);
+  stroke-width: 2px;
+  fill: none;
+}
+
+.tint {
+  rx: var(--radius-cell);
+  fill-opacity: var(--visited-tint-opacity);
+  transition: fill-opacity var(--dur-med) var(--ease-out);
+}
+
+.segment {
+  stroke-width: calc(var(--path-width) * 1px);
+  stroke-linecap: round;
+  fill: none;
+}
+
+.head {
+  pointer-events: none;
+}
+
+.headHalo {
+  opacity: 0.45;
+  filter: blur(6px);
+  animation: breathe 1.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.headCore {
+  fill: var(--head-core);
+  filter: drop-shadow(0 0 4px var(--head-core));
+}
+
+.disc {
+  fill: var(--number-bg);
+  transition: fill var(--dur-med) var(--ease-out);
+}
+
+.discText {
+  fill: var(--number-fg);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 36px;
+  font-variant-numeric: tabular-nums;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+.nextRing {
+  fill: none;
+  stroke: var(--number-ring-next);
+  stroke-width: 3px;
+  animation: ring 1.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.wall {
+  stroke: var(--wall);
+  stroke-width: calc(var(--wall-width) * 1px);
+  stroke-linecap: round;
+}
+
+.wallGlow {
+  stroke: var(--wall-glow);
+  stroke-width: calc(var(--wall-width) * 2.4px);
+  stroke-linecap: round;
+  filter: blur(4px);
+}
+
+.sweep {
+  fill: none;
+  stroke: var(--sweep);
+  stroke-width: 14px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 8px var(--sweep));
+  pointer-events: none;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.18);
+  }
+}
+
+@keyframes ring {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .headHalo,
+  .nextRing {
+    animation: none;
+  }
+  .nextRing {
+    opacity: 0.8;
+  }
+}

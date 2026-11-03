@@ -1,0 +1,66 @@
+/* Design tokens: every colour, radius, shadow and timing used by the app lives here. */
+:root {
+  /* Surfaces */
+  --bg: #0b0f1a;
+  --bg-glow: #131a33;
+  --board-bg: #0f1424;
+  --board-edge: #1d2540;
+  --grid-line: rgba(160, 180, 255, 0.09);
+  --text: #e8ecf8;
+  --text-dim: #8b93b0;
+
+  /* Path ramp (teal -> blue -> violet). Lightness falls along the ramp so position
+     is readable from brightness alone, not just hue. Read by src/game/color.ts. */
+  --path-stop-0: #7ff5e4;
+  --path-stop-1: #4c9dff;
+  --path-stop-2: #8a4dff;
+  --path-width: 34; /* SVG units, cell = 100 */
+  --visited-tint-opacity: 0.16;
+  --head-core: #ffffff;
+  --sweep: #ffffff;
+
+  /* Numbers */
+  --number-bg: #e9edf7;
+  --number-fg: #0b0f1a;
+  --number-ring-next: rgba(127, 245, 228, 0.75);
+
+  /* Walls */
+  --wall: #ffb547;
+  --wall-glow: rgba(255, 181, 71, 0.55);
+  --wall-width: 10;
+
+  /* Feedback */
+  --success: #7ff5e4;
+  --danger: #ff5d7a;
+
+  /* Controls */
+  --btn-bg: #18203a;
+  --btn-bg-hover: #212b4d;
+  --btn-border: #2a3560;
+  --btn-primary-bg: linear-gradient(135deg, #7ff5e4, #4c9dff 55%, #8a4dff);
+  --btn-primary-fg: #0b0f1a;
+  --focus-ring: 0 0 0 3px rgba(127, 245, 228, 0.6);
+
+  /* Shape */
+  --radius-board: 22px;
+  --radius-btn: 14px;
+  --radius-cell: 14; /* SVG units */
+
+  /* Shadows */
+  --shadow-board: 0 20px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--board-edge),
+    0 0 80px rgba(76, 157, 255, 0.08);
+  --shadow-btn: 0 4px 14px rgba(0, 0, 0, 0.35);
+
+  /* Type */
+  --font-display: 'Space Grotesk', ui-rounded, system-ui, sans-serif;
+  --font-body: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Motion (ms values are read in CSS; JS mirrors them in src/motion.ts) */
+  --dur-fast: 120ms;
+  --dur-med: 220ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Layout */
+  --gutter: 16px;
+  --board-max: 560px;
+}

@@ -1,0 +1,148 @@
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: max(env(safe-area-inset-top), 18px) var(--gutter) max(env(safe-area-inset-bottom), 20px);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.header {
+  width: 100%;
+  max-width: var(--board-max);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  letter-spacing: -0.02em;
+}
+
+.title span {
+  background: var(--btn-primary-bg);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.meta {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.stage {
+  /* Board is as large as fits: viewport width minus gutters, and leave room vertically
+     for header + controls. */
+  width: min(100%, var(--board-max), calc(100dvh - 230px));
+  min-width: min(100%, 300px);
+}
+
+.boardSlot {
+  width: 100%;
+}
+
+.progress {
+  width: 100%;
+  max-width: var(--board-max);
+  height: 4px;
+  border-radius: 2px;
+  background: var(--btn-bg);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--btn-primary-bg);
+  transform-origin: left;
+  transition: transform var(--dur-fast) linear;
+}
+
+.status {
+  margin: 0;
+  min-height: 1.4em;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.footer {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.controls,
+.solved {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.solvedText {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--success);
+  text-shadow: 0 0 18px var(--success);
+}
+
+.btn {
+  min-width: 104px;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--text);
+  font-weight: 500;
+  box-shadow: var(--shadow-btn);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
+    opacity var(--dur-fast);
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--btn-bg-hover);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.primary {
+  border: none;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  font-weight: 700;
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--btn-primary-bg);
+  filter: brightness(1.08);
+}

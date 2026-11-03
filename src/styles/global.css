@@ -1,0 +1,29 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  /* Stop pull-to-refresh / scroll chaining on mobile. */
+  overscroll-behavior: none;
+}
+
+body {
+  background: radial-gradient(120% 80% at 50% 0%, var(--bg-glow), var(--bg) 60%) fixed, var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#root {
+  min-height: 100%;
+}
+
+button {
+  font: inherit;
+}
