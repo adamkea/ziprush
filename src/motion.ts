@@ -9,6 +9,9 @@ export const MOTION = {
   pop: 0.26,
   messageDelay: 0.5, // "Solved!" appears; sequence ends ~0.68s
   message: 0.18,
+  autoAdvance: 1.5, // solved -> next stage starts switching (after the sequence settles)
+  stageOut: 0.26, // outgoing board slides away
+  stageIn: 0.34, // incoming board slides in
 } as const;
 
 /** Shared SVG geometry: one cell is 100 user units; PAD leaves room for walls and glow. */

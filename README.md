@@ -4,8 +4,9 @@ A daily "Zip" path puzzle for the web. Draw one continuous path from **1** throu
 number in order, filling every cell exactly once, ending on the last number. Walls block
 movement between cells.
 
-This stage is a single playable puzzle with polished input and visuals (four sample
-puzzles cycle via "Next puzzle"). There is no timer, daily seeding or generator yet.
+This stage is a single playable puzzle with polished input and visuals. Four sample
+puzzles play in sequence: solving one automatically slides in the next after the solve
+celebration (press "Next puzzle" to skip the wait). There is no timer, daily seeding or generator yet.
 
 ## Run locally
 
