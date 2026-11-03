@@ -6,7 +6,11 @@ movement between cells.
 
 This stage is a single playable puzzle with polished input and visuals. Four sample
 puzzles play in sequence: solving one automatically slides in the next after the solve
-celebration (press "Next puzzle" to skip the wait). There is no timer, daily seeding or generator yet.
+celebration (press "Next puzzle" to skip the wait). Each puzzle is timed from your first
+move; after the fourth, a results screen shows the total time, per-puzzle splits and
+backtracks, your best time (kept in this browser), and a **Share score** button (native
+share sheet where available, otherwise copies a text summary). There is no daily seeding or
+generator yet.
 
 ## Run locally
 
@@ -29,9 +33,9 @@ npm run build      # typecheck + production build into dist/
 
 | Path | Purpose |
 | --- | --- |
-| `src/game/` | Pure game logic, no React: `rules.ts`, `geometry.ts` (swipe interpolation), `color.ts` |
+| `src/game/` | Pure game logic, no React: `rules.ts`, `geometry.ts` (swipe interpolation), `color.ts`, `score.ts` (timing + share text) |
 | `src/puzzles/` | Puzzle JSON + loader; tests check every bundled solution is valid |
-| `src/components/` | `Board` (SVG + pointer/keyboard input), `PathLayer`, `Cell`, `Walls` |
+| `src/components/` | `Board` (SVG + pointer/keyboard input), `PathLayer`, `Cell`, `Walls`, `FinishScreen` |
 | `src/styles/tokens.css` | All colours, radii, shadows and timings |
 
 ## Puzzle format
